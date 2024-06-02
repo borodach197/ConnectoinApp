@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace ConnectionApp
 {
-    #region Подключение по РДП
-    #endregion
+    
+    
     public class RdpManager
     {
+        #region Подключение по РДП
         public static void ConnectRdp(string remoteComputer)
         {
             try
@@ -22,9 +23,10 @@ namespace ConnectionApp
                 Console.WriteLine($"Failed to start RDP connection.\nError: {ex.Message}");
             }
         }
+        #endregion
 
         #region Подключение по шадоу РДП с управлением с подтверждением пользователя
-        #endregion
+
         public static void ConnectShadowRdp(string remoteComputer, string sessionId)
         {
             if (string.IsNullOrWhiteSpace(sessionId))
@@ -42,9 +44,10 @@ namespace ConnectionApp
                 Console.WriteLine($"Failed to start Shadow RDP.\nError: {ex.Message}");
             }
         }
+        #endregion
 
         #region ПОдключение по РДП с УЗ админа
-        #endregion
+        
         public static void ConnectWithSavedCredentials(string filePath)
         {
             //var filepath = CredentialFileManager.
@@ -57,5 +60,7 @@ namespace ConnectionApp
             rdpProcess.StartInfo.Arguments = $"/v:remote_pc /u:{username} /p:{password}"; // Аргументы командной строки для подключения
             rdpProcess.Start();
         }
+        #endregion
     }
+    
 }
