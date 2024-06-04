@@ -32,16 +32,16 @@ namespace ConnectionApp
         }
 
         #region Окно результата
-        #endregion
         private void ResultWindow(string status)
         {
             // Создание и отображение окна статуса
             ResultWindow resultWindow = new ResultWindow(status);
             resultWindow.Show();
         }
+        #endregion
+
 
         #region Кнопка Ping 
-        #endregion
         private void buttonPing_Click(object sender, RoutedEventArgs e)
         {
             string computerName = computerNameTextBox.Text.Trim();
@@ -73,9 +73,10 @@ namespace ConnectionApp
                 MessageBox.Show($"Ошибка при выполнении пинга: {ex.Message}");
             }
         }
+        #endregion
+
 
         #region Кнопка ID сессии
-        #endregion
         private void GetSessionInfo_Click(object sender, RoutedEventArgs e)
         {
             string remoteComputer = computerNameTextBox.Text.Trim();
@@ -96,9 +97,10 @@ namespace ConnectionApp
 
             MessageBox.Show($"Active Session ID on {remoteComputer}: {sessionId}");
         }
+        #endregion
+
 
         #region Подключение по RDP
-        #endregion
         private void ConnectRdpButton_Click(object sender, RoutedEventArgs e)
         {
             string remoteComputer = computerNameTextBox.Text.Trim();
@@ -111,9 +113,10 @@ namespace ConnectionApp
 
             RdpManager.ConnectRdp(remoteComputer);
         }
+        #endregion
+
 
         #region Кнопка подключения по шадоу RDP
-        #endregion
         private void ConnectShadowRdpButton_Click(object sender, RoutedEventArgs e)
         {
             string remoteComputer = computerNameTextBox.Text.Trim();
@@ -135,7 +138,9 @@ namespace ConnectionApp
             RdpManager rdpManager = new RdpManager();
             RdpManager.ConnectShadowRdp(remoteComputer, sessionId);
         }
+        #endregion
 
+        #region Кнопка сохранения учетных данных в файл
         private void SaveCredentialsButton_Click(object sender, RoutedEventArgs e)
         {
             // Создаем новое окно для ввода учетных данных
@@ -162,6 +167,7 @@ namespace ConnectionApp
                 }
             }
         }
+        #endregion
     }
-        
+
 }

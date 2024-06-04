@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 namespace ConnectionApp
 {
     #region Создание файла хранения логина/пароля
-    #endregion
     public class CredentialFileManager
     {
         private static string filePath;
+
+        #region Создание файла по указанному пути
 
         static CredentialFileManager()
         {
@@ -27,7 +28,9 @@ namespace ConnectionApp
             //filePath = Path.Combine(currentDirectory, fileName);
 
         }
+        #endregion
 
+        #region Запись данных в файл
         public static void WriteCredentials(string username, string password)
         {
             try
@@ -47,7 +50,9 @@ namespace ConnectionApp
                 Console.WriteLine($"Failed to write credentials to file.\nError: {ex.Message}");
             }
         }
+        #endregion
 
+        #region Чтение данных из файла
         public static (string, string) ReadCredentials()
         {
             try
@@ -66,5 +71,8 @@ namespace ConnectionApp
                 return (null, null);
             }
         }
+        #endregion
+
     }
+    #endregion
 }
