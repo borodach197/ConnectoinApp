@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Shapes;
 
 namespace ConnectionApp
 {
@@ -12,37 +13,38 @@ namespace ConnectionApp
     {
         public static string GetActiveSessionId(string remoteComputer)
         {
-            string sessionId = null;
-
-            // Выполняем команду quser для получения информации о сеансах на удаленном компьютере
-            ProcessStartInfo processStartInfo = new ProcessStartInfo();
-            processStartInfo.FileName = "quser.exe";
-            processStartInfo.Arguments = $"/server:{remoteComputer}";
-            processStartInfo.RedirectStandardOutput = true;
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.CreateNoWindow = true;
-
-            using (Process process = Process.Start(processStartInfo))
+            try
             {
-                if (process != null)
-                {
-                    string output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit();
+                Process quserProcess = new Process();
+                quserProcess.StartInfo.FileName = @"C:\Windows\System32\quser.exe"; // Указать полный путь
+                quserProcess.StartInfo.Arguments = $"/server:{remoteComputer}";
+                quserProcess.StartInfo.UseShellExecute = false;
+                quserProcess.StartInfo.RedirectStandardOutput = true;
+                quserProcess.Start();
 
-                    // Извлекаем ID активной сессии из вывода команды quser
-                    string[] lines = output.Split('\n');
-                    foreach (string line in lines)
+                string output = quserProcess.StandardOutput.ReadToEnd();
+                quserProcess.WaitForExit();
+
+                // Парсинг вывода для получения ID сессии
+                string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                foreach (string line in lines)
+                {
+                    if (line.Contains(remoteComputer))
                     {
-                        if (line.Contains("Active"))
+                        string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length > 2)
                         {
-                            sessionId = line.Split().Last();
-                            break;
+                            return parts[2]; // ID сессии
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to get session ID.\nError: {ex.Message}");
+            }
 
-            return sessionId;
+            return null;
         }
     }
 }
