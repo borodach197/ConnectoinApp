@@ -9,6 +9,7 @@ using System.Windows.Shapes;
 
 namespace ConnectionApp
 {
+    #region ID текущейй сессии ПК
     public class SessionManager
     {
         public static string GetActiveSessionId(string remoteComputer)
@@ -47,4 +48,5 @@ namespace ConnectionApp
             return null;
         }
     }
+    #endregion
 }
