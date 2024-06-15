@@ -44,9 +44,9 @@ namespace ConnectionApp
         #region Кнопка Ping 
         private void buttonPing_Click(object sender, RoutedEventArgs e)
         {
-            string computerName = computerNameTextBox.Text.Trim();
+            string PCName = computerNameTextBox.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(computerName))
+            if (string.IsNullOrWhiteSpace(PCName))
             {
                 MessageBox.Show("Пожалуйста, введите IP адрес или имя компьютера.");
                 return;
@@ -55,16 +55,16 @@ namespace ConnectionApp
             try
             {
                 Ping ping = new Ping();
-                PingReply reply = ping.Send(computerName);
+                PingReply reply = ping.Send(PCName);
 
                 if (reply.Status == IPStatus.Success)
                 {
-                    string status = $"Пинг успешен для {computerName}";
+                    string status = $"Пинг успешен для {PCName}";
                     ResultWindow(status);
                 }
                 else
                 {
-                    string status = $"Пинг не удался для {computerName}";
+                    string status = $"Пинг не удался для {PCName}";
                     ResultWindow(status);
                 }
             }
@@ -79,15 +79,15 @@ namespace ConnectionApp
         #region Кнопка ID сессии
         private void GetSessionInfo_Click(object sender, RoutedEventArgs e)
         {
-            string remoteComputer = computerNameTextBox.Text.Trim();
+            string remotePC = computerNameTextBox.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(remoteComputer))
+            if (string.IsNullOrWhiteSpace(remotePC))
             {
                 MessageBox.Show("Please enter Remote Computer.");
                 return;
             }
 
-            string sessionId = SessionManager.GetActiveSessionId(remoteComputer);
+            string sessionId = SessionManager.GetSessionId(remotePC);
 
             if (string.IsNullOrWhiteSpace(sessionId))
             {
@@ -95,7 +95,7 @@ namespace ConnectionApp
                 return;
             }
 
-            MessageBox.Show($"Active Session ID on {remoteComputer}: {sessionId}");
+            MessageBox.Show($"Active Session ID on {remotePC}: {sessionId}");
         }
         #endregion
 
@@ -103,15 +103,15 @@ namespace ConnectionApp
         #region Подключение по RDP
         private void ConnectRdpButton_Click(object sender, RoutedEventArgs e)
         {
-            string remoteComputer = computerNameTextBox.Text.Trim();
+            string remotePC = computerNameTextBox.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(remoteComputer))
+            if (string.IsNullOrWhiteSpace(remotePC))
             {
                 MessageBox.Show("Please enter Remote Computer.");
                 return;
             }
 
-            RdpManager.ConnectRdp(remoteComputer);
+            RdpManager.ConnectRdp(remotePC);
         }
         #endregion
 
@@ -119,15 +119,15 @@ namespace ConnectionApp
         #region Кнопка подключения по шадоу RDP
         private void ConnectShadowRdpButton_Click(object sender, RoutedEventArgs e)
         {
-            string remoteComputer = computerNameTextBox.Text.Trim();
+            string remotePC = computerNameTextBox.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(remoteComputer))
+            if (string.IsNullOrWhiteSpace(remotePC))
             {
                 MessageBox.Show("Please enter Remote Computer.");
                 return;
             }
 
-            string sessionId = SessionManager.GetActiveSessionId(remoteComputer);
+            string sessionId = SessionManager.GetSessionId(remotePC);
 
             if (string.IsNullOrWhiteSpace(sessionId))
             {
@@ -136,9 +136,10 @@ namespace ConnectionApp
             }
 
             RdpManager rdpManager = new RdpManager();
-            RdpManager.ConnectShadowRdp(remoteComputer, sessionId);
+            RdpManager.ConnectShadowRdp(remotePC, sessionId);
         }
         #endregion
+
 
         #region Кнопка сохранения учетных данных в файл
         private void SaveCredentialsButton_Click(object sender, RoutedEventArgs e)

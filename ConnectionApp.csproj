@@ -68,6 +68,7 @@
     <Compile Include="ResultWindow.xaml.cs">
       <DependentUpon>ResultWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SecurityHelper.cs" />
     <Compile Include="SessionManager.cs" />
     <Compile Include="InputCredentialsWindow.xaml.cs">
       <DependentUpon>InputCredentialsWindow.xaml</DependentUpon>
