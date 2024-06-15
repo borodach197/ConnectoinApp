@@ -7,60 +7,74 @@ using System.Threading.Tasks;
 
 namespace ConnectionApp
 {
-    
-    
+
+
     public class RdpManager
     {
         #region Подключение по РДП
-        public static void ConnectRdp(string remoteComputer)
+        public static void ConnectRdp(string remotePC)
         {
-            try
+            var (username, password) = CredentialFileManager.ReadCredentials();
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                Process.Start("mstsc.exe", $"/v:{remoteComputer}");
+                Console.WriteLine("Invalid credentials.");
+                return;
             }
-            catch (Exception ex)
+
+            ProcessStartInfo mstscProcessInfo = new ProcessStartInfo
             {
-                Console.WriteLine($"Failed to start RDP connection.\nError: {ex.Message}");
-            }
+                FileName = "mstsc.exe",
+                Arguments = $"/v:{remotePC} /admin /user:{username} /password:{password}",
+                UseShellExecute = false
+            };
+
+            Process mstscProcess = new Process
+            {
+                StartInfo = mstscProcessInfo
+            };
+
+            mstscProcess.Start();
         }
         #endregion
 
         #region Подключение по шадоу РДП с управлением с подтверждением пользователя
 
-        public static void ConnectShadowRdp(string remoteComputer, string sessionId)
+        public static void ConnectShadowRdp(string remotePC, string sessionId)
         {
-            if (string.IsNullOrWhiteSpace(sessionId))
+            var (username, password) = CredentialFileManager.ReadCredentials();
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                Console.WriteLine("Session ID is empty.");
+                Console.WriteLine("Invalid credentials.");
                 return;
             }
 
-            try
+            sessionId = SessionManager.GetSessionId(remotePC);
+
+            if (sessionId == null)
             {
-                Process.Start("mstsc.exe", $"/shadow:{sessionId} /control /v:{remoteComputer}");
+                Console.WriteLine("No active sessions found.");
+                return;
             }
-            catch (Exception ex)
+
+            ProcessStartInfo shadowProcessInfo = new ProcessStartInfo
             {
-                Console.WriteLine($"Failed to start Shadow RDP.\nError: {ex.Message}");
-            }
+                FileName = "mstsc.exe",
+                Arguments = $"/shadow:{sessionId} /control /noConsentPrompt /user:{username} /password:{password}",
+                UseShellExecute = false
+            };
+
+            Process shadowProcess = new Process
+            {
+                StartInfo = shadowProcessInfo
+            };
+
+            shadowProcess.Start();
         }
         #endregion
 
-        #region ПОдключение по РДП с УЗ админа
-        
-        public static void ConnectWithSavedCredentials(string filePath)
-        {
-            //var filepath = CredentialFileManager.
-            // Чтение учетных данных из файла
-            (string username, string password) = CredentialFileManager.ReadCredentials();
-
-            // Подключение по RDP с использованием учетных данных
-            Process rdpProcess = new Process();
-            rdpProcess.StartInfo.FileName = "mstsc.exe"; // Путь к клиенту RDP
-            rdpProcess.StartInfo.Arguments = $"/v:remote_pc /u:{username} /p:{password}"; // Аргументы командной строки для подключения
-            rdpProcess.Start();
-        }
-        #endregion
     }
-    
 }
+    
+
