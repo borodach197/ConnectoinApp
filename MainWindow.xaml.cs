@@ -29,6 +29,16 @@ namespace ConnectionApp
         public MainWindow()
         {
             InitializeComponent();
+
+            // Подписка на событие закрытия приложения
+            Application.Current.Exit += new ExitEventHandler(OnApplicationExit);
+
+        }
+
+        private void OnApplicationExit(object sender, ExitEventArgs e)
+        {
+            // Удаление файла с учетными данными при закрытии приложения
+            CredentialFileManager.DeleteCredentialsFile();
         }
 
         #region Окно результата
@@ -103,6 +113,14 @@ namespace ConnectionApp
         #region Подключение по RDP
         private void ConnectRdpButton_Click(object sender, RoutedEventArgs e)
         {
+            var (username, password) = CredentialFileManager.ReadCredentials();
+
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                MessageBox.Show("Please save credentials first.");
+                return;
+            }
+
             string remotePC = computerNameTextBox.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(remotePC))
@@ -111,7 +129,7 @@ namespace ConnectionApp
                 return;
             }
 
-            RdpManager.ConnectRdp(remotePC);
+            RdpConnector.ConnectRdp(remotePC, username, password);
         }
         #endregion
 
@@ -135,8 +153,8 @@ namespace ConnectionApp
                 return;
             }
 
-            RdpManager rdpManager = new RdpManager();
-            RdpManager.ConnectShadowRdp(remotePC, sessionId);
+            RdpConnector rdpManager = new RdpConnector();
+            RdpConnector.ConnectShadowRdp(remotePC, sessionId);
         }
         #endregion
 

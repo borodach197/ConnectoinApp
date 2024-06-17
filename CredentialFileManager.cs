@@ -73,6 +73,23 @@ namespace ConnectionApp
         }
         #endregion
 
+        #region Удаление файла после закрытия программы
+        public static void DeleteCredentialsFile()
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete credentials file.\nError: {ex.Message}");
+            }
+        }
+        #endregion
+
     }
     #endregion
 }

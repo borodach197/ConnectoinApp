@@ -4,37 +4,33 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using System.Windows;
 
 namespace ConnectionApp
 {
 
 
-    public class RdpManager
+    public class RdpConnector
     {
         #region Подключение по РДП
-        public static void ConnectRdp(string remotePC)
+        public static void ConnectRdp(string remotePC, string username, string password)
         {
-            var (username, password) = CredentialFileManager.ReadCredentials();
-
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            try
             {
-                Console.WriteLine("Invalid credentials.");
-                return;
+                // Add credentials to Credential Manager
+                SecurityHelper.AddCredentialsToCredentialManager(remotePC, username, password);
+
+                // Start RDP connection
+                Process mstscProcess = new Process();
+                mstscProcess.StartInfo.FileName = "mstsc.exe";
+                mstscProcess.StartInfo.Arguments = $"/v:{remotePC}";
+                mstscProcess.Start();
             }
-
-            ProcessStartInfo mstscProcessInfo = new ProcessStartInfo
+            catch (Exception ex)
             {
-                FileName = "mstsc.exe",
-                Arguments = $"/v:{remotePC} /admin /user:{username} /password:{password}",
-                UseShellExecute = false
-            };
-
-            Process mstscProcess = new Process
-            {
-                StartInfo = mstscProcessInfo
-            };
-
-            mstscProcess.Start();
+                Console.WriteLine($"Failed to connect to RDP.\nError: {ex.Message}");
+            }
         }
         #endregion
 
