@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Shapes;
 
 namespace ConnectionApp
@@ -13,9 +15,9 @@ namespace ConnectionApp
     #region ID текущей сессии ПК
     public class SessionManager
     {
-        public static string GetSessionId(string remotePC)
+        public static string GetSessionId(string remotePC, string username, string password)
         {
-            (string username, string password) = CredentialFileManager.ReadCredentials();
+            (username, password) = CredentialFileManager.ReadCredentials();
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
@@ -25,48 +27,51 @@ namespace ConnectionApp
 
             try
             {
-                Process qwinstaProcess = new Process();
-                qwinstaProcess.StartInfo.FileName = "qwinsta";
-                qwinstaProcess.StartInfo.Arguments = $"/server:{remotePC}";
-                qwinstaProcess.StartInfo.UseShellExecute = false;
-                qwinstaProcess.StartInfo.RedirectStandardOutput = true;
-                qwinstaProcess.StartInfo.RedirectStandardError = true;
-                qwinstaProcess.StartInfo.UserName = username;
-                qwinstaProcess.StartInfo.Password = SecurityHelper.ConvertToSecureString(password);
-                qwinstaProcess.StartInfo.Domain = ""; // Укажите домен, если необходимо
-
-                qwinstaProcess.Start();
-
-                string output = qwinstaProcess.StandardOutput.ReadToEnd();
-                qwinstaProcess.WaitForExit();
-
-                if (qwinstaProcess.ExitCode == 0)
+                // Создание процесса для выполнения команды qwinsta
+                ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    // Парсинг вывода для получения ID сессии
-                    string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-                    foreach (string line in lines)
+                    FileName = "cmd.exe",
+                    Arguments = $"/c qwinsta /server:{remotePC}",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    UserName = username,
+                    PasswordInClearText = password, // Прямая передача пароля, если метод ConvertToSecureString не требуется
+                    Domain = "" // Задайте домен, если требуется
+                };
+
+                using (Process process = Process.Start(startInfo))
+                {
+                    using (StreamReader reader = process.StandardOutput)
                     {
-                        if (line.Contains(remotePC))
-                        {
-                            string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                            if (parts.Length > 2)
-                            {
-                                return parts[2]; // ID сессии
-                            }
-                        }
+                        string output = reader.ReadToEnd();
+                        process.WaitForExit();
+
+                        // Анализ результата для извлечения ID сессии
+                        string sessionId = ParseSessionId(output);
+                        return sessionId ?? "No active sessions found.";
                     }
-                }
-                else
-                {
-                    string error = qwinstaProcess.StandardError.ReadToEnd();
-                    Console.WriteLine($"Error running qwinsta: {error}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to get session ID.\nError: {ex.Message}");
+                return $"Failed to get session ID.\nError: {ex.Message}";
             }
+        }
 
+        private static string ParseSessionId(string output)
+        {
+            // Логика анализа вывода команды qwinsta для извлечения ID сессии
+            string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            foreach (string line in lines)
+            {
+                if (line.Contains("Active"))
+                {
+                    string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    return parts[2]; // Предполагается, что ID сессии находится в третьем столбце
+                }
+            }
             return null;
         }
 

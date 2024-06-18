@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using System.Windows;
+using System.IO;
 
 namespace ConnectionApp
 {
@@ -36,37 +37,48 @@ namespace ConnectionApp
 
         #region Подключение по шадоу РДП с управлением с подтверждением пользователя
 
-        public static void ConnectShadowRdp(string remotePC, string sessionId)
+        public static void ConnectShadowRDP(string server, string username, string password)
         {
-            var (username, password) = CredentialFileManager.ReadCredentials();
-
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            try
             {
-                Console.WriteLine("Invalid credentials.");
-                return;
+                // Получение текущего ID сессии
+                string sessionId = SessionManager.GetSessionId(server, username, password);
+                if (sessionId == "No active sessions found.")
+                {
+                    Console.WriteLine("No active sessions found.");
+                    return;
+                }
+
+                // Запуск командной строки для выполнения команды shadow rdp
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c mstsc /shadow:{sessionId} /v:{server} /control /noConsentPrompt",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    UserName = username,
+                    PasswordInClearText = password, // Прямая передача пароля
+                    Domain = "" // Задайте домен, если требуется
+                };
+
+                using (Process process = Process.Start(startInfo))
+                {
+                    using (StreamReader reader = process.StandardOutput)
+                    {
+                        string output = reader.ReadToEnd();
+                        process.WaitForExit();
+
+                        // Вывод результата выполнения команды
+                        Console.WriteLine(output);
+                    }
+                }
             }
-
-            sessionId = SessionManager.GetSessionId(remotePC);
-
-            if (sessionId == null)
+            catch (Exception ex)
             {
-                Console.WriteLine("No active sessions found.");
-                return;
+                Console.WriteLine($"Failed to connect via shadow RDP.\nError: {ex.Message}");
             }
-
-            ProcessStartInfo shadowProcessInfo = new ProcessStartInfo
-            {
-                FileName = "mstsc.exe",
-                Arguments = $"/shadow:{sessionId} /control /noConsentPrompt /user:{username} /password:{password}",
-                UseShellExecute = false
-            };
-
-            Process shadowProcess = new Process
-            {
-                StartInfo = shadowProcessInfo
-            };
-
-            shadowProcess.Start();
         }
         #endregion
 
