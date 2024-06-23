@@ -89,23 +89,7 @@ namespace ConnectionApp
         #region Кнопка ID сессии
         private void GetSessionInfo_Click(object sender, RoutedEventArgs e)
         {
-            string remotePC = computerNameTextBox.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(remotePC))
-            {
-                MessageBox.Show("Please enter Remote Computer.");
-                return;
-            }
-
-            string sessionId = SessionManager.GetSessionId(remotePC);
-
-            if (string.IsNullOrWhiteSpace(sessionId))
-            {
-                MessageBox.Show("Failed to get Session ID.");
-                return;
-            }
-
-            MessageBox.Show($"Active Session ID on {remotePC}: {sessionId}");
+            SessionManager.ShowSessions();
         }
         #endregion
 
@@ -137,24 +121,26 @@ namespace ConnectionApp
         #region Кнопка подключения по шадоу RDP
         private void ConnectShadowRdpButton_Click(object sender, RoutedEventArgs e)
         {
-            string remotePC = computerNameTextBox.Text.Trim();
+            //string remotePC = computerNameTextBox.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(remotePC))
-            {
-                MessageBox.Show("Please enter Remote Computer.");
-                return;
-            }
+            //var (username, password) = CredentialFileManager.ReadCredentials();
 
-            string sessionId = SessionManager.GetSessionId(remotePC);
+            //if (string.IsNullOrWhiteSpace(remotePC))
+            //{
+            //    MessageBox.Show("Please enter Remote Computer.");
+            //    return;
+            //}
 
-            if (string.IsNullOrWhiteSpace(sessionId))
-            {
-                MessageBox.Show("Failed to get Session ID.");
-                return;
-            }
+            //string sessionId = SessionManager.GetSessionId(remotePC, username, password);
 
-            RdpConnector rdpManager = new RdpConnector();
-            RdpConnector.ConnectShadowRdp(remotePC, sessionId);
+            //if (string.IsNullOrWhiteSpace(sessionId))
+            //{
+            //    MessageBox.Show("Failed to get Session ID.");
+            //    return;
+            //}
+
+            //RdpConnector rdpManager = new RdpConnector();
+            //RdpConnector.ConnectShadowRdp(remotePC, username, password);
         }
         #endregion
 

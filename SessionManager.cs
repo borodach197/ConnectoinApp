@@ -12,67 +12,66 @@ using System.Windows.Shapes;
 
 namespace ConnectionApp
 {
+    public class SessionInfo
+    {
+        public string User { get; set; }
+        public string SessionId { get; set; }
+    }
     #region ID текущей сессии ПК
     public class SessionManager
     {
-        public static string GetSessionId(string remotePC, string username, string password)
+        public static void ShowSessions()
         {
-            (username, password) = CredentialFileManager.ReadCredentials();
-
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-            {
-                Console.WriteLine("Username or password is empty.");
-                return null;
-            }
-
             try
             {
-                // Создание процесса для выполнения команды qwinsta
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                var sessions = GetSessions();
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c qwinsta /server:{remotePC}",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    UserName = username,
-                    PasswordInClearText = password, // Прямая передача пароля, если метод ConvertToSecureString не требуется
-                    Domain = "" // Задайте домен, если требуется
-                };
-
-                using (Process process = Process.Start(startInfo))
-                {
-                    using (StreamReader reader = process.StandardOutput)
-                    {
-                        string output = reader.ReadToEnd();
-                        process.WaitForExit();
-
-                        // Анализ результата для извлечения ID сессии
-                        string sessionId = ParseSessionId(output);
-                        return sessionId ?? "No active sessions found.";
-                    }
-                }
+                    var sessionWindow = new SessionWindow(sessions);
+                    sessionWindow.Show();
+                });
             }
             catch (Exception ex)
             {
-                return $"Failed to get session ID.\nError: {ex.Message}";
+                MessageBox.Show($"Failed to get sessions.\nError: {ex.Message}");
             }
         }
 
-        private static string ParseSessionId(string output)
+        private static List<SessionInfo> GetSessions()
         {
-            // Логика анализа вывода команды qwinsta для извлечения ID сессии
-            string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            foreach (string line in lines)
+            List<SessionInfo> sessions = new List<SessionInfo>();
+            Process quserProcess = new Process
             {
-                if (line.Contains("Active"))
+                StartInfo = new ProcessStartInfo
                 {
-                    string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    return parts[2]; // Предполагается, что ID сессии находится в третьем столбце
+                    FileName = "cmd.exe",
+                    Arguments = "/c quser",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            quserProcess.Start();
+
+            string output = quserProcess.StandardOutput.ReadToEnd();
+            quserProcess.WaitForExit();
+
+            var lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines.Skip(1)) // Skip header line
+            {
+                var columns = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (columns.Length >= 2)
+                {
+                    sessions.Add(new SessionInfo
+                    {
+                        User = columns[0],
+                        SessionId = columns[1]
+                    });
                 }
             }
-            return null;
+
+            return sessions;
         }
 
     }

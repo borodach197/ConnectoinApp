@@ -37,48 +37,48 @@ namespace ConnectionApp
 
         #region Подключение по шадоу РДП с управлением с подтверждением пользователя
 
-        public static void ConnectShadowRDP(string server, string username, string password)
+        public static void ConnectShadowRdp(string server, string username, string password)
         {
-            try
-            {
-                // Получение текущего ID сессии
-                string sessionId = SessionManager.GetSessionId(server, username, password);
-                if (sessionId == "No active sessions found.")
-                {
-                    Console.WriteLine("No active sessions found.");
-                    return;
-                }
+            //try
+            //{
+            //    // Получение текущего ID сессии
+            //    string sessionId = SessionManager.GetSessionId(server, username, password);
+            //    if (sessionId == "No active sessions found.")
+            //    {
+            //        Console.WriteLine("No active sessions found.");
+            //        return;
+            //    }
 
-                // Запуск командной строки для выполнения команды shadow rdp
-                ProcessStartInfo startInfo = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c mstsc /shadow:{sessionId} /v:{server} /control /noConsentPrompt",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    UserName = username,
-                    PasswordInClearText = password, // Прямая передача пароля
-                    Domain = "" // Задайте домен, если требуется
-                };
+            //    // Запуск командной строки для выполнения команды shadow rdp
+            //    ProcessStartInfo startInfo = new ProcessStartInfo
+            //    {
+            //        FileName = "cmd.exe",
+            //        Arguments = $"/c mstsc /shadow:{sessionId} /v:{server} /control /noConsentPrompt",
+            //        UseShellExecute = false,
+            //        RedirectStandardOutput = true,
+            //        RedirectStandardError = true,
+            //        CreateNoWindow = true,
+            //        UserName = username,
+            //        PasswordInClearText = password, // Прямая передача пароля
+            //        Domain = "" // Задайте домен, если требуется
+            //    };
 
-                using (Process process = Process.Start(startInfo))
-                {
-                    using (StreamReader reader = process.StandardOutput)
-                    {
-                        string output = reader.ReadToEnd();
-                        process.WaitForExit();
+            //    using (Process process = Process.Start(startInfo))
+            //    {
+            //        using (StreamReader reader = process.StandardOutput)
+            //        {
+            //            string output = reader.ReadToEnd();
+            //            process.WaitForExit();
 
-                        // Вывод результата выполнения команды
-                        Console.WriteLine(output);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to connect via shadow RDP.\nError: {ex.Message}");
-            }
+            //            // Вывод результата выполнения команды
+            //            Console.WriteLine(output);
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"Failed to connect via shadow RDP.\nError: {ex.Message}");
+            //}
         }
         #endregion
 
